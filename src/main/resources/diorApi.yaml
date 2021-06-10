@@ -1,0 +1,265 @@
+openapi: "3.0.0"
+info:
+  title: "API Employee discount"
+  description: "\n# FR\n\nAPI permettant de connaitre la position d'un salariÃ© Orange\
+    \ RÃ©union Mayotte pour faire valoir ses droits lors de l'achat de produits en\
+    \ boutique ou en VAD (PCM)\n\nElle dÃ©crit les ressources suivantes :\n- `eligibilityEmployee`\
+    \ : L'Ã©gibilitÃ© d'un employÃ©\n\n## Fonctionnement gÃ©nÃ©ral\n\nIl existe 1 type\
+    \ d'usagers de l'API :\n- l'accÃ¨s en lecture pour le composant Comarch system\n\
+    \n## Permissions d'accÃ¨s\n\nL'API va autoriser les accÃ¨s en fonction du contenu\
+    \ de l'header `X-OAPI-Validated-Scope`. Cet header devra Ãªtre provisionnÃ© par\
+    \ un composant de __confiance__ - un filtre applicatif et/ou une gateway -.\n\n\
+    Le consommateur rÃ©el de l'application lui s'authentifiera via le serveur d'autorisation\
+    \ cible.\n\nCe mÃ©canisme pourra Ãªtre amenÃ© Ã  changer en fonction des choix d'implÃ©\
+    mentation effectuÃ© sur le sujet gateway d'API et il est ainsi possible que l'API\
+    \ rÃ©cupÃ¨re directement un `accessToken` oauth2 et qu'elle doivent se charger de\
+    \ rÃ©cupÃ©rer les informations d'identitÃ© utilisateur\n\n## API Dior\n\nL'API ira\
+    \ rÃ©cupÃ©rer les informations auprÃ¨s de l'API DIOR (Digital Identiy On Request)\
+    \ et retournera uniquement les informations nÃ©cessaires Ã  Comarch API.\n\n# EN\n\
+    \nAPI enabling the position of an Orange RÃ©union Mayotte employee to be known\
+    \ in order to assert his rights when purchasing products in a store or in a VAD\
+    \ (PCM).\n\nIt describes the following resources:\n- `eligibilityEmployee`: The\
+    \ eligibility of an employee\n\n## General operation\n\nThere are 1 type of API\
+    \ users:\n- read access for the Comarch system component\n\n## Access Permissions\n\
+    \nThe API will allow accesses depending on the contents of the `X-OAPI-Validated-Scope`\
+    \ header. This header will have to be provided by a __trust__ component - an application\
+    \ filter and/or a gateway.\n\nThe real consumer of the application will authenticate\
+    \ to it via the target authorization server.\n\nThis mechanism may change depending\
+    \ on the implementation choices made on the API gateway subject and it is thus\
+    \ possible that the API directly retrieves an `accessToken` oauth2 and that it\
+    \ must take care of retrieving the user identity information.\n\n## API Dior\n\
+    \nThe API will retrieve the information from the DIOR (Digital Identity On Request)\
+    \ API and return only the necessary information to Comarch API.\n"
+  version: "0.1.0"
+servers:
+- url: "https://api.orange.re/employee-discount/v1"
+  description: "Serveur de production"
+tags:
+- name: "Employee discount"
+  description: "Remise salariÃ©"
+paths:
+  /eligibilityRequests:
+    parameters:
+    - $ref: "#/components/parameters/XOApiApplicationId"
+    - $ref: "#/components/parameters/XOApiUserId"
+    - $ref: "#/components/parameters/XOApiChannel"
+    - $ref: "#/components/parameters/XOApiOrigin"
+    - $ref: "#/components/parameters/XOApiValidatedScope"
+    post:
+      tags:
+      - "Employee discount"
+      summary: "Is the person described an employee"
+      operationId: "eligibilityRequests"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Employee"
+      responses:
+        200:
+          description: "Request has been proceed"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Employee"
+        400:
+          description: "Unable to process the request"
+  /status:
+    get:
+      tags:
+      - "Admin"
+      summary: "Retourne l'Ã©tat du service"
+      description: "Etat de l'API"
+      operationId: "getStatus"
+      responses:
+        200:
+          description: "Etat du service"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Status"
+              examples:
+                StatusExample:
+                  $ref: "#/components/examples/StatusExample"
+components:
+  schemas:
+    Employee:
+      type: "object"
+      description: "EmployÃ©e"
+      required:
+      - "firstname"
+      - "lastname"
+      - "cuid"
+      properties:
+        id:
+          type: "string"
+          description: "UUID"
+          example: " 5bc047ad-72bb-4140-8738-331a1b12bfa8"
+          readOnly: true
+        cuid:
+          type: "string"
+          description: "Le CUID"
+          example: "abcd1234"
+        firstname:
+          type: "string"
+          description: "Le prÃ©nom"
+          example: "John"
+        lastname:
+          type: "string"
+          description: "Le nom"
+          example: "DOE"
+        eligible:
+          type: "boolean"
+          description: "Si eligible Ã  la remise salariÃ©"
+          readOnly: true
+    ErrorMessage:
+      type: "object"
+      description: "Message d'erreur"
+      properties:
+        code:
+          type: "number"
+          description: "Code d'erreur"
+        message:
+          type: "string"
+          description: "Une chaÃ®ne de caractÃ¨re courte et localisÃ©e qui dÃ©crit l'erreur"
+        description:
+          type: "string"
+          description: "Une description longue de l'erreur. Elle peut contenir des\
+            \ informations prÃ©cises"
+        infoURL:
+          type: "string"
+          description: "Une URL vers une documentation en ligne dÃ©crivant plus prÃ©\
+            cisÃ¨ment l'erreur"
+    Status:
+      type: "object"
+      properties:
+        name:
+          type: "string"
+          description: "Nom de l'application"
+        status:
+          type: "string"
+          description: "Statut de l'application"
+        version:
+          type: "string"
+          description: "Version de l'application"
+        components:
+          type: "array"
+          description: "Liste des composants"
+          items:
+            $ref: "#/components/schemas/ComponentStatus"
+    ComponentStatus:
+      type: "object"
+      description: "Statut du composant"
+      properties:
+        name:
+          type: "string"
+          description: "Nom du composant"
+        status:
+          type: "string"
+          description: "Statut du composant"
+        version:
+          type: "string"
+          description: "Version du composant"
+  parameters:
+    XOApiApplicationId:
+      in: "header"
+      name: "X-OAPI-Application-Id"
+      description: "Application consommatrice"
+      schema:
+        type: "string"
+      example: "Code BASICAT"
+    XOApiUserId:
+      in: "header"
+      name: "X-OAPI-User-Id"
+      description: "Identifiant de l'utilisateur si l'authentification a Ã©tÃ© effectuÃ©"
+      schema:
+        type: "string"
+      example: "ABCD1234"
+    XOApiChannel:
+      in: "header"
+      name: "X-OAPI-Channel"
+      description: "Identifiant du channel"
+      schema:
+        type: "string"
+      example: "WEB"
+    XOApiOrigin:
+      in: "header"
+      name: "X-OAPI-Origin"
+      description: "Identifiant de l'origine"
+      schema:
+        type: "string"
+      example: "curl"
+    XOApiValidatedScope:
+      in: "header"
+      name: "X-OAPI-Validated-Scope"
+      description: "Scopes des utilisateurs sous la forme d'une liste de terme sÃ©\
+        parÃ©e par une virgule"
+      schema:
+        type: "array"
+        items:
+          type: "string"
+          enum:
+          - "employeeDiscount_read"
+          default: "employeeDiscount_read"
+  responses:
+    NoContent:
+      description: "Le code 204 est renvoyÃ© :<br>\n* si la requÃªte a Ã©tÃ© traitÃ©e avec\
+        \ succÃ¨s et qu\\'il n\\'y a pas d\\'information a renvoyer"
+    BadRequest:
+      description: "Le code 400 est renvoyÃ© :<br>\n* si l\\'un des paramÃ¨tres d\\\
+        'entrÃ©e n\\'est pas valide"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorMessage"
+          examples:
+            BadRequestExample:
+              $ref: "#/components/examples/BadRequestExample"
+    NotFound:
+      description: "Le code 404 est renvoyÃ© :<br>\n* si la ressource n'existe pas"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorMessage"
+          examples:
+            NotFoundExample:
+              $ref: "#/components/examples/NotFoundExample"
+    InternalServerError:
+      description: "Le code 500 est renvoyÃ© :<br>\n* s'il y a eu une erreur interne"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorMessage"
+          examples:
+            InternalServerErrorExample:
+              $ref: "#/components/examples/InternalServerErrorExample"
+    ServiceUnavailable:
+      description: "Le code 503 est renvoyÃ© :<br>\n* si le service est temporairement\
+        \ indisponible ou en maintenance"
+  examples:
+    StatusExample:
+      summary: "Status"
+      value:
+        name: "API POS"
+        status: "AVAILABLE"
+        version: "1.0.0"
+        components:
+        - name: "MariaDB"
+          status: "AVAILABLE"
+          vesion: "10.1.32"
+    BadRequestExample:
+      summary: "Bad Request"
+      value:
+        code: 28
+        message: "Invalid query-string parameter value"
+    NotFoundExample:
+      summary: "Not found"
+      value:
+        code: 60
+        message: "Resource not found"
+    InternalServerErrorExample:
+      summary: "Internal Server Error"
+      value:
+        code: 1
+        message: "Internal Server Error"
+
